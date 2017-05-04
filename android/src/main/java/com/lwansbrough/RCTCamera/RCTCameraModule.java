@@ -24,6 +24,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -36,7 +37,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 public class RCTCameraModule extends ReactContextBaseJavaModule
-    implements MediaRecorder.OnInfoListener, MediaRecorder.OnErrorListener, LifecycleEventListener {
+        implements MediaRecorder.OnInfoListener, MediaRecorder.OnErrorListener, LifecycleEventListener {
     private static final String TAG = "RCTCameraModule";
 
     public static final int RCT_CAMERA_ASPECT_FILL = 0;
@@ -90,21 +91,21 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
     }
 
     public static ReactApplicationContext getReactContextSingleton() {
-      return _reactContext;
+        return _reactContext;
     }
 
     /**
      * Callback invoked on new MediaRecorder info.
-     *
+     * <p>
      * See https://developer.android.com/reference/android/media/MediaRecorder.OnInfoListener.html
      * for more information.
      *
-     * @param mr MediaRecorder instance for which this callback is being invoked.
-     * @param what Type of info we have received.
+     * @param mr    MediaRecorder instance for which this callback is being invoked.
+     * @param what  Type of info we have received.
      * @param extra Extra code, specific to the info type.
      */
     public void onInfo(MediaRecorder mr, int what, int extra) {
-        if ( what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED ||
+        if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED ||
                 what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
             if (mRecordingPromise != null) {
                 releaseMediaRecorder(); // release the MediaRecorder object and resolve promise
@@ -114,12 +115,12 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
 
     /**
      * Callback invoked when a MediaRecorder instance encounters an error while recording.
-     *
+     * <p>
      * See https://developer.android.com/reference/android/media/MediaRecorder.OnErrorListener.html
      * for more information.
      *
-     * @param mr MediaRecorder instance for which this callback is being invoked.
-     * @param what Type of error that has occurred.
+     * @param mr    MediaRecorder instance for which this callback is being invoked.
+     * @param what  Type of error that has occurred.
      * @param extra Extra code, specific to the error type.
      */
     public void onError(MediaRecorder mr, int what, int extra) {
@@ -250,7 +251,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
 
     /**
      * Prepare media recorder for video capture.
-     *
+     * <p>
      * See "Capturing Videos" at https://developer.android.com/guide/topics/media/camera.html for
      * a guideline of steps and more information in general.
      *
@@ -353,7 +354,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
 
         try {
             mMediaRecorder.start();
-            MRStartTime =  System.currentTimeMillis();
+            MRStartTime = System.currentTimeMillis();
             mRecordingOptions = options;
             mRecordingPromise = promise;  // only got here if mediaRecorder started
         } catch (Exception ex) {
@@ -364,7 +365,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
 
     /**
      * Release media recorder following video capture (or failure to start recording session).
-     *
+     * <p>
      * See "Capturing Videos" at https://developer.android.com/guide/topics/media/camera.html for
      * a guideline of steps and more information in general.
      */
@@ -374,7 +375,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         if (duration < 1500) {
             try {
                 Thread.sleep(1500 - duration);
-            } catch(InterruptedException ex) {
+            } catch (InterruptedException ex) {
                 Log.e(TAG, "releaseMediaRecorder thread sleep error.", ex);
             }
         }
@@ -459,14 +460,12 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         mRecordingPromise = null;
     }
 
-    public static byte[] convertFileToByteArray(File f)
-    {
+    public static byte[] convertFileToByteArray(File f) {
         byte[] byteArray = null;
-        try
-        {
+        try {
             InputStream inputStream = new FileInputStream(f);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] b = new byte[1024*8];
+            byte[] b = new byte[1024 * 8];
             int bytesRead;
 
             while ((bytesRead = inputStream.read(b)) != -1) {
@@ -474,9 +473,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
             }
 
             byteArray = bos.toByteArray();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return byteArray;
@@ -506,7 +503,9 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         RCTCamera.getInstance().setIdentityStatus(true);
     }
 
-    public static void sendSuccessInfo() {
+    static void sendSuccessInfo() {
+        _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("onIdentityListener", "success");
         // TODO: 发送请求到小程序..
     }
 
@@ -555,13 +554,13 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
             }
         };
 
-        if(mSafeToCapture) {
-          try {
-            camera.takePicture(null, null, captureCallback);
-            mSafeToCapture = false;
-          } catch(RuntimeException ex) {
-              Log.e(TAG, "Couldn't capture photo.", ex);
-          }
+        if (mSafeToCapture) {
+            try {
+                camera.takePicture(null, null, captureCallback);
+                mSafeToCapture = false;
+            } catch (RuntimeException ex) {
+                Log.e(TAG, "Couldn't capture photo.", ex);
+            }
         }
     }
 
@@ -575,7 +574,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         } catch (MutableImage.ImageMutationFailedException e) {
             promise.reject("Error mirroring image", e);
         }
-        
+
         if (shouldMirror) {
             try {
                 mutableImage.mirrorImage();
@@ -585,7 +584,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         }
 
         int jpegQualityPercent = 80;
-        if(options.hasKey("jpegQuality")) {
+        if (options.hasKey("jpegQuality")) {
             jpegQualityPercent = options.getInt("jpegQuality");
         }
 
@@ -747,7 +746,7 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
     }
 
     private void addToMediaStore(String path) {
-        MediaScannerConnection.scanFile(_reactContext, new String[] { path }, null, null);
+        MediaScannerConnection.scanFile(_reactContext, new String[]{path}, null, null);
     }
 
     /**
