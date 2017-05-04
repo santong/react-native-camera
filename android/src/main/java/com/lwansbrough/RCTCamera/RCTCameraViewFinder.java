@@ -287,6 +287,11 @@ class RCTCameraViewFinder extends TextureView implements TextureView.SurfaceText
             RCTCameraViewFinder.barcodeScannerTaskLock = true;
             new ReaderAsyncTask(camera, data).execute();
         }
+
+        if (RCTCamera.getInstance().isIdentitying()) {
+            // TODO: Android 通知 RN 识别到了人脸，并暂停识别， RN开始拍照
+            RCTCamera.getInstance().setIdentityStatus(false);
+        }
     }
 
     private class ReaderAsyncTask extends AsyncTask<Void, Void, Void> {

@@ -26,6 +26,7 @@ public class RCTCamera {
     private int _orientation = -1;
     private int _actualDeviceOrientation = 0;
     private int _adjustedDeviceOrientation = 0;
+    private boolean _isIdentitying = false;
 
     public static RCTCamera getInstance() {
         return ourInstance;
@@ -440,6 +441,20 @@ public class RCTCamera {
                 acquireCameraInstance(RCTCameraModule.RCT_CAMERA_TYPE_BACK);
                 releaseCameraInstance(RCTCameraModule.RCT_CAMERA_TYPE_BACK);
             }
+        }
+    }
+
+    public boolean isIdentitying() {
+        return _isIdentitying;
+    }
+
+    public void setIdentityStatus(boolean _isIdentitying) {
+        this._isIdentitying = _isIdentitying;
+
+        Log.e("===isIdentitying", " " + _isIdentitying);
+
+        if (!_isIdentitying) {
+            RCTCameraModule.sendSuccessInfo();
         }
     }
 

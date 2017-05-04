@@ -501,6 +501,15 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         }
     }
 
+    @ReactMethod
+    public void startIdentity() {
+        RCTCamera.getInstance().setIdentityStatus(true);
+    }
+
+    public static void sendSuccessInfo() {
+        // TODO: 发送请求到小程序..
+    }
+
     private void captureWithOrientation(final ReadableMap options, final Promise promise, int deviceOrientation) {
         Camera camera = RCTCamera.getInstance().acquireCameraInstance(options.getInt("type"));
         if (null == camera) {
